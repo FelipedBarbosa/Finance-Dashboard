@@ -20,3 +20,4 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
      */
     Optional<Asset> findBySymbol(String symbol);
 }
+  
