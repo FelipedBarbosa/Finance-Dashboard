@@ -1,179 +1,147 @@
 # Finance Dashboard
 
-Aplicação backend desenvolvida com Java e Spring Boot para gerenciamento de ativos financeiros, atualização automática de preços e métricas de portfólio.
+> Monorepo — Full-stack application: React frontend + Spring Boot backend + PostgreSQL
 
-## Sobre o Projeto
+[![CI](https://github.com/FelipedBarbosa/Finance-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/FelipedBarbosa/Finance-Dashboard/actions/workflows/ci.yml)
 
-O Finance Dashboard é uma aplicação REST desenvolvida para simular uma plataforma de monitoramento financeiro. O sistema permite cadastrar ativos, consultar métricas financeiras e acompanhar atualizações de preços em tempo real.
+**Demo Online:** https://finance-dashboard-phi.vercel.app *(atualizar após deploy)*
 
-O projeto foi construído com foco em boas práticas de desenvolvimento backend utilizando Spring Boot, arquitetura em camadas, testes automatizados e integração com APIs externas.
+---
+
+## Estrutura do Repositório
+
+```
+finance-dashboard/
+├── backend/          # Spring Boot 3 · Java 17 · PostgreSQL
+├── frontend/         # React 19 · TanStack Router · Vite · Tailwind CSS
+├── docker-compose.yml
+├── README.md
+└── .github/
+    └── workflows/
+        └── ci.yml
+```
+
+---
 
 ## Funcionalidades
 
-* Cadastro e listagem de ativos financeiros
-* Atualização automática de preços
-* Integração com a API CoinGecko
-* Histórico de preços
-* Métricas de portfólio
-* Endpoints RESTful
-* Atualizações em tempo real com WebSocket
-* Scheduler para atualização periódica de dados
-* Testes unitários e de integração
-* Monitoramento com Spring Boot Actuator
+- 📈 Dashboard de portfólio com gráfico dos últimos 30 dias
+- 💹 Listagem e cadastro de ativos financeiros
+- 🔴 Preços em tempo real via WebSocket
+- 🌍 Integração com a API CoinGecko
+- 📊 Métricas por ativo (market cap, volume 24h, high/low)
+- 📋 Documentação interativa via Swagger/OpenAPI
+- ⚙️ Monitoramento com Spring Boot Actuator
 
-## Tecnologias Utilizadas
+---
 
-### Backend
+## Stack
 
-* Java 17
-* Spring Boot 3.3.0
-* Spring Web
-* Spring Data JPA
-* Spring WebFlux
-* Spring WebSocket
-* Spring Boot Actuator
-* Maven
-* Lombok
+| Camada | Tecnologia |
+|---|---|
+| Frontend | React 19, TanStack Router, React Query, Recharts, Tailwind CSS 4 |
+| Backend | Spring Boot 3.3, Java 17, Spring Data JPA, WebSocket, WebFlux |
+| Banco | PostgreSQL 15 |
+| CI | GitHub Actions |
+| Deploy Frontend | Vercel |
+| Deploy Backend | Render / Railway |
+| Containerização | Docker, Docker Compose |
 
-### Banco de Dados
+---
 
-* PostgreSQL
-* H2 Database (testes)
-
-### Ferramentas
-
-* Docker
-* Docker Compose
-* JUnit 5
-* Mockito
-
-## Estrutura do Projeto
-
-```text
-src
- ├── main
- │    ├── java
- │    │    └── me/felipebarbosa/finance
- │    │         ├── client
- │    │         ├── controller
- │    │         ├── dto
- │    │         ├── model
- │    │         ├── repository
- │    │         ├── scheduler
- │    │         ├── service
- │    │         └── websocket
- │    └── resources
- └── test
-```
-
-## Como Executar o Projeto
+## Como Executar
 
 ### Pré-requisitos
 
-* Java 17
-* Docker
-* Docker Compose
+- Java 17
+- Node 20
+- Docker + Docker Compose
 
-### 1. Clonar o repositório
+### Opção 1 — Docker Compose (tudo de uma vez)
 
 ```bash
 git clone https://github.com/FelipedBarbosa/Finance-Dashboard.git
 cd finance-dashboard
+
+docker compose up --build
 ```
 
-### 2. Subir o banco de dados
+| Serviço | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8080 |
+| Swagger UI | http://localhost:8080/swagger-ui.html |
+| Health Check | http://localhost:8080/actuator/health |
+
+---
+
+### Opção 2 — Desenvolvimento local
+
+**Backend:**
 
 ```bash
-docker-compose up -d
+cd backend
+./mvnw package -DskipTests
+java -jar target/finance-dashboard-0.0.1-SNAPSHOT.jar
 ```
 
-### 3. Executar a aplicação
-
-No Linux/macOS:
+**Frontend:**
 
 ```bash
-./mvnw spring-boot:run
+cd frontend
+npm install --legacy-peer-deps
+npm run dev
 ```
 
-No Windows:
+Acesse: http://localhost:3000
 
-```bash
-mvnw.cmd spring-boot:run
-```
+---
 
-A aplicação estará disponível em:
+## Deploy
 
-```text
-http://localhost:8080
-```
+### Frontend → Vercel
 
-## Endpoints Principais
+1. Importe o repositório no [Vercel](https://vercel.com)
+2. Configure **Root Directory** como `frontend`
+3. Adicione as variáveis de ambiente:
+   ```
+   VITE_API_URL=https://seu-backend.onrender.com
+   VITE_WS_URL=wss://seu-backend.onrender.com/ws/prices
+   ```
+4. Deploy automático a cada push na `main`
 
-### Criar ativo
+### Backend → Render
 
-```http
-POST /assets
-```
+1. Crie um novo **Web Service** no [Render](https://render.com)
+2. Selecione o repositório e configure **Root Directory** como `backend`
+3. Render detecta automaticamente o `Dockerfile`
+4. Adicione as variáveis de ambiente do PostgreSQL
 
-Exemplo de payload:
+---
 
-```json
-{
-  "symbol": "bitcoin",
-  "name": "Bitcoin",
-  "currentPrice": 30000
-}
-```
+## Endpoints da API
 
-### Listar ativos
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `GET` | `/assets` | Lista todos os ativos |
+| `POST` | `/assets` | Cadastra novo ativo |
+| `GET` | `/assets/{id}/metrics` | Métricas de um ativo |
+| `GET` | `/assets/chart/portfolio-last-30-days` | Histórico do portfólio |
+| `WS` | `/ws/prices` | Stream de preços em tempo real |
+| `GET` | `/actuator/health` | Status da aplicação |
+| `GET` | `/swagger-ui.html` | Documentação interativa |
 
-```http
-GET /assets
-```
-
-### Buscar métricas de um ativo
-
-```http
-GET /assets/{id}/metrics
-```
-
-### Histórico do portfólio
-
-```http
-GET /assets/chart/portfolio-last-30-days
-```
-
-## WebSocket
-
-A aplicação disponibiliza comunicação em tempo real para atualização automática de preços dos ativos.
+---
 
 ## Testes
 
-Executar os testes automatizados:
-
 ```bash
+cd backend
 ./mvnw test
 ```
 
-## Monitoramento
-
-O projeto utiliza Spring Boot Actuator.
-
-Endpoint:
-
-```http
-GET /actuator/health
-```
-
-## Melhorias Futuras
-
-* Autenticação com JWT
-* Dashboard frontend em React
-* Deploy em cloud
-* Cache com Redis
-* Documentação com Swagger/OpenAPI
-* Integração com mais provedores financeiros
+---
 
 ## Autor
 
-Desenvolvido por Felipe Barbosa.
+Desenvolvido por **Felipe Barbosa**
