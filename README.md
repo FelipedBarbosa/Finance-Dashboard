@@ -1,6 +1,6 @@
 # Finance Dashboard
 
-> Monorepo — Full-stack application: React frontend + Spring Boot backend + PostgreSQL
+Aplicação full-stack para gerenciamento de ativos financeiros, com autenticação segura, atualização automática de preços e métricas de portfólio por usuário.
 
 [![CI](https://github.com/FelipedBarbosa/Finance-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/FelipedBarbosa/Finance-Dashboard/actions/workflows/ci.yml)
 
@@ -25,13 +25,10 @@ finance-dashboard/
 
 ## Funcionalidades
 
-- 📈 Dashboard de portfólio com gráfico dos últimos 30 dias
-- 💹 Listagem e cadastro de ativos financeiros
-- 🔴 Preços em tempo real via WebSocket
-- 🌍 Integração com a API CoinGecko
-- 📊 Métricas por ativo (market cap, volume 24h, high/low)
-- 📋 Documentação interativa via Swagger/OpenAPI
-- ⚙️ Monitoramento com Spring Boot Actuator
+* Java 17
+* Node.js (para o frontend)
+* Docker
+* Docker Compose
 
 ---
 
@@ -49,7 +46,7 @@ finance-dashboard/
 
 ---
 
-## Como Executar
+### 3. Executar o backend
 
 ### Pré-requisitos
 
@@ -66,12 +63,69 @@ cd finance-dashboard
 docker compose up --build
 ```
 
-| Serviço | URL |
-|---|---|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8080 |
-| Swagger UI | http://localhost:8080/swagger-ui.html |
-| Health Check | http://localhost:8080/actuator/health |
+As migrações Flyway são aplicadas automaticamente na inicialização.
+
+### 4. Executar o frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+A interface estará disponível em:
+
+```text
+http://localhost:5173
+```
+
+## Autenticação
+
+A API utiliza autenticação stateless via JWT.
+
+### Registrar usuário
+
+```http
+POST /auth/register
+```
+
+```json
+{
+  "username": "felipe",
+  "email": "felipe@example.com",
+  "password": "SenhaForte123456"
+}
+```
+
+### Login
+
+```http
+POST /auth/login
+```
+
+```json
+{
+  "username": "felipe",
+  "password": "SenhaForte123456"
+}
+```
+
+Resposta:
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "tokenType": "Bearer"
+}
+```
+
+Todas as requisições aos endpoints de ativos devem incluir o header:
+
+```text
+Authorization: Bearer <accessToken>
+```
+
+## Endpoints Principais
 
 ---
 
@@ -85,7 +139,7 @@ cd backend
 java -jar target/finance-dashboard-0.0.1-SNAPSHOT.jar
 ```
 
-**Frontend:**
+### Listar ativos (do usuário autenticado)
 
 ```bash
 cd frontend
@@ -117,9 +171,11 @@ Acesse: http://localhost:3000
 3. Render detecta automaticamente o `Dockerfile`
 4. Adicione as variáveis de ambiente do PostgreSQL
 
----
+Executar os testes automatizados do backend:
 
-## Endpoints da API
+```bash
+./mvnw -f backend/pom.xml test
+```
 
 | Método | Endpoint | Descrição |
 |---|---|---|
@@ -140,7 +196,14 @@ cd backend
 ./mvnw test
 ```
 
----
+## Melhorias Futuras
+
+* Refresh token automático no frontend
+* Deploy em cloud
+* Cache com Redis
+* Documentação com Swagger/OpenAPI
+* Integração com mais provedores financeiros
+* Testes end-to-end com Cypress
 
 ## Autor
 
