@@ -20,10 +20,10 @@ function Dashboard() {
   const assetsQ = useQuery({ queryKey: ["assets"], queryFn: () => assetsApi.list() });
   const chartQ = useQuery({ queryKey: ["chart"], queryFn: () => assetsApi.portfolioChart() });
 
-  const assets = assetsQ.data ?? [];
+  const assets = Array.isArray(assetsQ.data) ? assetsQ.data : [];
   const total = assets.reduce((s, a) => s + a.currentPrice, 0);
-  const best = [...assets].sort((a, b) => b.changePercent - a.changePercent)[0];
-  const worst = [...assets].sort((a, b) => a.changePercent - b.changePercent)[0];
+  const best = assets.length > 0 ? [...assets].sort((a, b) => b.changePercent - a.changePercent)[0] : undefined;
+  const worst = assets.length > 0 ? [...assets].sort((a, b) => a.changePercent - b.changePercent)[0] : undefined;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
