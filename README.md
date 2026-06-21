@@ -2,133 +2,65 @@
 
 Aplicação full-stack para gerenciamento de ativos financeiros, com autenticação segura, atualização automática de preços e métricas de portfólio por usuário.
 
-## Sobre o Projeto
+[![CI](https://github.com/FelipedBarbosa/Finance-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/FelipedBarbosa/Finance-Dashboard/actions/workflows/ci.yml)
 
-O Finance Dashboard é uma plataforma de monitoramento financeiro multiusuário. Cada usuário possui seu próprio portfólio isolado, podendo cadastrar ativos, consultar métricas financeiras e acompanhar atualizações de preços em tempo real.
+**Demo Online:** https://finance-dashboard-phi.vercel.app *(atualizar após deploy)*
 
-O projeto foi construído com foco em boas práticas de desenvolvimento backend e frontend, utilizando Spring Boot, autenticação stateless com JWT, arquitetura em camadas, migrações versionadas com Flyway e uma interface React moderna.
+---
 
-## Funcionalidades
+## Estrutura do Repositório
 
-* Cadastro e autenticação de usuários (registro/login) com JWT
-* Portfólio isolado por usuário (cada ativo pertence a um único dono)
-* Cadastro e listagem de ativos financeiros
-* Atualização automática de preços
-* Integração com a API CoinGecko
-* Histórico de preços
-* Métricas de portfólio
-* Endpoints RESTful protegidos
-* Atualizações em tempo real com WebSocket
-* Scheduler para atualização periódica de dados
-* Testes unitários e de integração
-* Monitoramento com Spring Boot Actuator
-* Interface web em React com tema dark premium
-
-## Tecnologias Utilizadas
-
-### Backend
-
-* Java 17
-* Spring Boot 3.3.0
-* Spring Web
-* Spring Security + JWT (jjwt)
-* Spring Data JPA
-* Spring WebFlux
-* Spring WebSocket
-* Spring Boot Actuator
-* Flyway (migrações de banco)
-* Maven
-* Lombok
-
-### Frontend
-
-* React + TypeScript (Vite)
-* React Router
-* Axios (com interceptor JWT)
-* Recharts (gráficos de portfólio)
-
-### Banco de Dados
-
-* PostgreSQL
-* H2 Database (testes)
-
-### Ferramentas
-
-* Docker
-* Docker Compose
-* JUnit 5
-* Mockito
-
-## Estrutura do Projeto
-
-```text
-backend
- ├── src
- │    ├── main
- │    │    ├── java
- │    │    │    └── me/felipebarbosa/finance
- │    │    │         ├── client
- │    │    │         ├── config        # SecurityConfig, CorsConfig
- │    │    │         ├── controller    # AuthController, AssetController
- │    │    │         ├── dto
- │    │    │         ├── model         # User, Asset
- │    │    │         ├── repository
- │    │    │         ├── scheduler
- │    │    │         ├── security      # JwtUtils, JwtFilter, UserDetailsServiceImpl
- │    │    │         ├── service
- │    │    │         └── websocket
- │    │    └── resources
- │    │         └── db/migration       # scripts Flyway (V1...Vn)
- │    └── test
-frontend
- ├── src
- │    ├── components
- │    ├── lib                          # api.ts, authService.ts
- │    ├── hooks
- │    ├── routes
- │    └── app.tsx
+```
+finance-dashboard/
+├── backend/          # Spring Boot 3 · Java 17 · PostgreSQL
+├── frontend/         # React 19 · TanStack Router · Vite · Tailwind CSS
+├── docker-compose.yml
+├── README.md
+└── .github/
+    └── workflows/
+        └── ci.yml
 ```
 
-## Como Executar o Projeto
+---
 
-### Pré-requisitos
+## Funcionalidades
 
 * Java 17
 * Node.js (para o frontend)
 * Docker
 * Docker Compose
 
-### 1. Clonar o repositório
+---
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Frontend | React 19, TanStack Router, React Query, Recharts, Tailwind CSS 4 |
+| Backend | Spring Boot 3.3, Java 17, Spring Data JPA, WebSocket, WebFlux |
+| Banco | PostgreSQL 15 |
+| CI | GitHub Actions |
+| Deploy Frontend | Vercel |
+| Deploy Backend | Render / Railway |
+| Containerização | Docker, Docker Compose |
+
+---
+
+### 3. Executar o backend
+
+### Pré-requisitos
+
+- Java 17
+- Node 20
+- Docker + Docker Compose
+
+### Opção 1 — Docker Compose (tudo de uma vez)
 
 ```bash
 git clone https://github.com/FelipedBarbosa/Finance-Dashboard.git
 cd finance-dashboard
-```
 
-### 2. Subir o banco de dados
-
-```bash
-docker-compose up -d
-```
-
-### 3. Executar o backend
-
-No Linux/macOS:
-
-```bash
-./mvnw -f backend/pom.xml spring-boot:run
-```
-
-No Windows:
-
-```bash
-mvnw.cmd -f backend/pom.xml spring-boot:run
-```
-
-A API estará disponível em:
-
-```text
-http://localhost:8080
+docker compose up --build
 ```
 
 As migrações Flyway são aplicadas automaticamente na inicialização.
@@ -195,45 +127,49 @@ Authorization: Bearer <accessToken>
 
 ## Endpoints Principais
 
-### Criar ativo
+---
 
-```http
-POST /assets
-```
+### Opção 2 — Desenvolvimento local
 
-Exemplo de payload:
+**Backend:**
 
-```json
-{
-  "symbol": "bitcoin",
-  "name": "Bitcoin",
-  "currentPrice": 30000
-}
+```bash
+cd backend
+./mvnw package -DskipTests
+java -jar target/finance-dashboard-0.0.1-SNAPSHOT.jar
 ```
 
 ### Listar ativos (do usuário autenticado)
 
-```http
-GET /assets
+```bash
+cd frontend
+npm install --legacy-peer-deps
+npm run dev
 ```
 
-### Buscar métricas de um ativo
+Acesse: http://localhost:3000
 
-```http
-GET /assets/{id}/metrics
-```
+---
 
-### Histórico do portfólio
+## Deploy
 
-```http
-GET /assets/chart/portfolio-last-30-days
-```
+### Frontend → Vercel
 
-## WebSocket
+1. Importe o repositório no [Vercel](https://vercel.com)
+2. Configure **Root Directory** como `frontend`
+3. Adicione as variáveis de ambiente:
+   ```
+   VITE_API_URL=https://seu-backend.onrender.com
+   VITE_WS_URL=wss://seu-backend.onrender.com/ws/prices
+   ```
+4. Deploy automático a cada push na `main`
 
-A aplicação disponibiliza comunicação em tempo real para atualização automática de preços dos ativos.
+### Backend → Render
 
-## Testes
+1. Crie um novo **Web Service** no [Render](https://render.com)
+2. Selecione o repositório e configure **Root Directory** como `backend`
+3. Render detecta automaticamente o `Dockerfile`
+4. Adicione as variáveis de ambiente do PostgreSQL
 
 Executar os testes automatizados do backend:
 
@@ -241,14 +177,23 @@ Executar os testes automatizados do backend:
 ./mvnw -f backend/pom.xml test
 ```
 
-## Monitoramento
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `GET` | `/assets` | Lista todos os ativos |
+| `POST` | `/assets` | Cadastra novo ativo |
+| `GET` | `/assets/{id}/metrics` | Métricas de um ativo |
+| `GET` | `/assets/chart/portfolio-last-30-days` | Histórico do portfólio |
+| `WS` | `/ws/prices` | Stream de preços em tempo real |
+| `GET` | `/actuator/health` | Status da aplicação |
+| `GET` | `/swagger-ui.html` | Documentação interativa |
 
-O projeto utiliza Spring Boot Actuator.
+---
 
-Endpoint:
+## Testes
 
-```http
-GET /actuator/health
+```bash
+cd backend
+./mvnw test
 ```
 
 ## Melhorias Futuras
@@ -262,4 +207,4 @@ GET /actuator/health
 
 ## Autor
 
-Desenvolvido por Felipe Barbosa.
+Desenvolvido por **Felipe Barbosa**
