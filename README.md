@@ -1,25 +1,28 @@
 # Finance Dashboard
 
-Aplicação backend desenvolvida com Java e Spring Boot para gerenciamento de ativos financeiros, atualização automática de preços e métricas de portfólio.
+Aplicação full-stack para gerenciamento de ativos financeiros, com autenticação segura, atualização automática de preços e métricas de portfólio por usuário.
 
 ## Sobre o Projeto
 
-O Finance Dashboard é uma aplicação REST desenvolvida para simular uma plataforma de monitoramento financeiro. O sistema permite cadastrar ativos, consultar métricas financeiras e acompanhar atualizações de preços em tempo real.
+O Finance Dashboard é uma plataforma de monitoramento financeiro multiusuário. Cada usuário possui seu próprio portfólio isolado, podendo cadastrar ativos, consultar métricas financeiras e acompanhar atualizações de preços em tempo real.
 
-O projeto foi construído com foco em boas práticas de desenvolvimento backend utilizando Spring Boot, arquitetura em camadas, testes automatizados e integração com APIs externas.
+O projeto foi construído com foco em boas práticas de desenvolvimento backend e frontend, utilizando Spring Boot, autenticação stateless com JWT, arquitetura em camadas, migrações versionadas com Flyway e uma interface React moderna.
 
 ## Funcionalidades
 
+* Cadastro e autenticação de usuários (registro/login) com JWT
+* Portfólio isolado por usuário (cada ativo pertence a um único dono)
 * Cadastro e listagem de ativos financeiros
 * Atualização automática de preços
 * Integração com a API CoinGecko
 * Histórico de preços
 * Métricas de portfólio
-* Endpoints RESTful
+* Endpoints RESTful protegidos
 * Atualizações em tempo real com WebSocket
 * Scheduler para atualização periódica de dados
 * Testes unitários e de integração
 * Monitoramento com Spring Boot Actuator
+* Interface web em React com tema dark premium
 
 ## Tecnologias Utilizadas
 
@@ -28,12 +31,21 @@ O projeto foi construído com foco em boas práticas de desenvolvimento backend 
 * Java 17
 * Spring Boot 3.3.0
 * Spring Web
+* Spring Security + JWT (jjwt)
 * Spring Data JPA
 * Spring WebFlux
 * Spring WebSocket
 * Spring Boot Actuator
+* Flyway (migrações de banco)
 * Maven
 * Lombok
+
+### Frontend
+
+* React + TypeScript (Vite)
+* React Router
+* Axios (com interceptor JWT)
+* Recharts (gráficos de portfólio)
 
 ### Banco de Dados
 
@@ -50,20 +62,31 @@ O projeto foi construído com foco em boas práticas de desenvolvimento backend 
 ## Estrutura do Projeto
 
 ```text
-src
- ├── main
- │    ├── java
- │    │    └── me/felipebarbosa/finance
- │    │         ├── client
- │    │         ├── controller
- │    │         ├── dto
- │    │         ├── model
- │    │         ├── repository
- │    │         ├── scheduler
- │    │         ├── service
- │    │         └── websocket
- │    └── resources
- └── test
+backend
+ ├── src
+ │    ├── main
+ │    │    ├── java
+ │    │    │    └── me/felipebarbosa/finance
+ │    │    │         ├── client
+ │    │    │         ├── config        # SecurityConfig, CorsConfig
+ │    │    │         ├── controller    # AuthController, AssetController
+ │    │    │         ├── dto
+ │    │    │         ├── model         # User, Asset
+ │    │    │         ├── repository
+ │    │    │         ├── scheduler
+ │    │    │         ├── security      # JwtUtils, JwtFilter, UserDetailsServiceImpl
+ │    │    │         ├── service
+ │    │    │         └── websocket
+ │    │    └── resources
+ │    │         └── db/migration       # scripts Flyway (V1...Vn)
+ │    └── test
+frontend
+ ├── src
+ │    ├── components
+ │    ├── lib                          # api.ts, authService.ts
+ │    ├── hooks
+ │    ├── routes
+ │    └── app.tsx
 ```
 
 ## Como Executar o Projeto
@@ -71,6 +94,7 @@ src
 ### Pré-requisitos
 
 * Java 17
+* Node.js (para o frontend)
 * Docker
 * Docker Compose
 
@@ -87,24 +111,86 @@ cd finance-dashboard
 docker-compose up -d
 ```
 
-### 3. Executar a aplicação
+### 3. Executar o backend
 
 No Linux/macOS:
 
 ```bash
-./mvnw spring-boot:run
+./mvnw -f backend/pom.xml spring-boot:run
 ```
 
 No Windows:
 
 ```bash
-mvnw.cmd spring-boot:run
+mvnw.cmd -f backend/pom.xml spring-boot:run
 ```
 
-A aplicação estará disponível em:
+A API estará disponível em:
 
 ```text
 http://localhost:8080
+```
+
+As migrações Flyway são aplicadas automaticamente na inicialização.
+
+### 4. Executar o frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+A interface estará disponível em:
+
+```text
+http://localhost:5173
+```
+
+## Autenticação
+
+A API utiliza autenticação stateless via JWT.
+
+### Registrar usuário
+
+```http
+POST /auth/register
+```
+
+```json
+{
+  "username": "felipe",
+  "email": "felipe@example.com",
+  "password": "SenhaForte123456"
+}
+```
+
+### Login
+
+```http
+POST /auth/login
+```
+
+```json
+{
+  "username": "felipe",
+  "password": "SenhaForte123456"
+}
+```
+
+Resposta:
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "tokenType": "Bearer"
+}
+```
+
+Todas as requisições aos endpoints de ativos devem incluir o header:
+
+```text
+Authorization: Bearer <accessToken>
 ```
 
 ## Endpoints Principais
@@ -125,7 +211,7 @@ Exemplo de payload:
 }
 ```
 
-### Listar ativos
+### Listar ativos (do usuário autenticado)
 
 ```http
 GET /assets
@@ -149,10 +235,10 @@ A aplicação disponibiliza comunicação em tempo real para atualização autom
 
 ## Testes
 
-Executar os testes automatizados:
+Executar os testes automatizados do backend:
 
 ```bash
-./mvnw test
+./mvnw -f backend/pom.xml test
 ```
 
 ## Monitoramento
@@ -167,12 +253,12 @@ GET /actuator/health
 
 ## Melhorias Futuras
 
-* Autenticação com JWT
-* Dashboard frontend em React
+* Refresh token automático no frontend
 * Deploy em cloud
 * Cache com Redis
 * Documentação com Swagger/OpenAPI
 * Integração com mais provedores financeiros
+* Testes end-to-end com Cypress
 
 ## Autor
 
