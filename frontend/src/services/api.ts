@@ -60,6 +60,9 @@ function mockChart(): PortfolioPoint[] {
 async function safe<T>(p: Promise<{ data: T }>, fallback: T): Promise<T> {
   try {
     const r = await p;
+    if (typeof r.data === "string" && (r.data.trim().startsWith("<!DOCTYPE") || r.data.trim().startsWith("<html"))) {
+      throw new Error("Received HTML instead of JSON");
+    }
     return r.data;
   } catch {
     return fallback;
