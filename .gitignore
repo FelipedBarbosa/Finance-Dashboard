@@ -4,7 +4,6 @@ node_modules/
 
 # Backend
 backend/target/
-backend/.mvn/wrapper/maven-wrapper.jar
 
 # Frontend
 frontend/node_modules/
