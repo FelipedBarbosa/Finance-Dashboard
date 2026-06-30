@@ -47,7 +47,14 @@ class PriceServiceTest {
     @Test
     void testUpdatePrice_savesUpdatedAsset() throws InterruptedException {
     // 1. Criamos o asset e pegamos o tempo EXATO de agora
-    Asset asset = new Asset(1L, "BTC", "Bitcoin", BigDecimal.valueOf(30000), LocalDateTime.now(), List.of());
+    Asset asset = Asset.builder()
+            .id(1L)
+            .symbol("BTC")
+            .name("Bitcoin")
+            .currentPrice(BigDecimal.valueOf(30000))
+            .lastUpdated(LocalDateTime.now())
+            .priceHistory(List.of())
+            .build();
     LocalDateTime tempoAntesDaAtualizacao = asset.getLastUpdated();
 
     // 2. Forçamos uma espera mínima (apenas 10ms) para o relógio avançar

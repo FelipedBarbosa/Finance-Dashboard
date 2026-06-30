@@ -14,7 +14,7 @@ spring:
     locations: classpath:db/migration
 
 jwt:
-  secret: "YTJmNzk4ZDEtZWI5Yi00MjFhLWE3ZDktNDc2YWVhMDE2YTk5LWZpbmFuY2UtZGFzaGJvYXJk"
+  secret: "YTJmNzk4ZDEtZWI5Yi00MjFhLWE3ZDktNDc2YWVhMDE2YTk5LWZpbmFuY2UtZGFzaGJvYXJkLXNlY3VyZS1rZXktNjQtYnl0ZXM="
   accessTokenExpirationMs: 3600000   # 1 hour
   refreshTokenExpirationMs: 604800000 # 7 days
 
